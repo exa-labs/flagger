@@ -1,6 +1,7 @@
 TAG?=latest
 VERSION?=$(shell grep 'VERSION' pkg/version/version.go | awk '{ print $$4 }' | tr -d '"')
 LT_VERSION?=$(shell grep 'VERSION' cmd/loadtester/main.go | awk '{ print $$4 }' | tr -d '"' | head -n1)
+REGISTRY?=ghcr.io/fluxcd/flagger-loadtester
 
 build:
 	CGO_ENABLED=0 go build -a -o ./bin/flagger ./cmd/flagger
@@ -51,7 +52,7 @@ release:
 	git push origin "v$(VERSION)"
 
 loadtester-build:
-	docker build -t ghcr.io/fluxcd/flagger-loadtester:$(LT_VERSION) . -f Dockerfile.loadtester
+	docker build -t ${REGISTRY}:$(LT_VERSION) . -f Dockerfile.loadtester
 
 loadtester-push:
-	docker push ghcr.io/fluxcd/flagger-loadtester:$(LT_VERSION)
+	docker push ${REGISTRY}:$(LT_VERSION)
