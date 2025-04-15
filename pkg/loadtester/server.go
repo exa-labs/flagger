@@ -418,6 +418,32 @@ func HandleNewTask(logger *zap.SugaredLogger, taskRunner TaskRunnerInterface, au
 				}
 				return
 			}
+			if typ == TaskTypeGitHub {
+				github, err := NewGitHubTask(payload.Metadata, fmt.Sprintf("%s.%s", payload.Name, payload.Namespace), logger)
+				if err != nil {
+					logger.With("canary", payload.Name).Errorf("github task init error: %s", err)
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte(err.Error()))
+					return
+				}
+
+				ctx, cancel := context.WithTimeout(context.Background(), taskRunner.Timeout())
+				defer cancel()
+
+				result, err := github.Run(ctx)
+				if !result.ok {
+					logger.With("canary", payload.Name).Errorf("github task error: %s", err)
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte(err.Error()))
+					return
+				}
+
+				w.WriteHeader(http.StatusOK)
+				if rtnCmdOutput {
+					w.Write(result.out)
+				}
+				return
+			}
 
 			taskFactory, ok := GetTaskFactory(typ)
 			if !ok {
