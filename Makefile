@@ -52,7 +52,9 @@ release:
 	git push origin "v$(VERSION)"
 
 loadtester-build:
-	docker build -t ${REGISTRY}:$(LT_VERSION) . -f Dockerfile.loadtester
+	docker buildx create --name multi-platform-builder --use || true
+	docker buildx build --platform linux/amd64,linux/arm64 -t ${REGISTRY}:$(LT_VERSION) . -f Dockerfile.loadtester --load
 
 loadtester-push:
-	docker push ${REGISTRY}:$(LT_VERSION)
+	docker buildx create --name multi-platform-builder --use || true
+	docker buildx build --platform linux/amd64,linux/arm64 -t ${REGISTRY}:$(LT_VERSION) . -f Dockerfile.loadtester --push
