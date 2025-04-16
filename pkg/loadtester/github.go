@@ -27,6 +27,7 @@ const (
 	ENV_GITHUB_POLL_INTERVAL = "GITHUB_POLL_INTERVAL"
 	ENV_GITHUB_POLL_TIMEOUT  = "GITHUB_POLL_TIMEOUT"
 	ENV_GITHUB_MAX_RETRIES   = "GITHUB_MAX_RETRIES"
+	ENV_CLUSTER_NAME         = "CLUSTER_NAME"
 )
 
 // Default process values
@@ -85,6 +86,14 @@ func NewGitHubTask(metadata map[string]string, canary string, logger *zap.Sugare
 		}
 	}
 
+	clusterName, foundClusterName := metadata["cluster_name"]
+	if !foundClusterName {
+		clusterName, foundClusterName = os.LookupEnv(ENV_CLUSTER_NAME)
+		if !foundClusterName {
+			return nil, fmt.Errorf("`cluster_name` is required with type %s or set via %s env var", TaskTypeGitHub, ENV_CLUSTER_NAME)
+		}
+	}
+
 	pollIntervalInt = DEFAULT_POLL_INTERVAL
 	if val, found := metadata["poll_interval"]; found {
 		pollIntervalInt, err = parseInt(val)
@@ -135,6 +144,7 @@ func NewGitHubTask(metadata map[string]string, canary string, logger *zap.Sugare
 	}
 
 	clientPayload["canary"] = canary
+	clientPayload["cluster_name"] = clusterName
 
 	return &GitHubTask{
 		TaskBase: TaskBase{
