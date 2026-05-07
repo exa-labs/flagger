@@ -19,6 +19,13 @@ artifacts/gcloud/
 .idea
 Makefile.dev
 
+# Local secrets
+.env
+.env.*
+*.key
+*.pem
+.next/
+
 vendor
 coverage.txt
 
