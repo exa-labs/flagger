@@ -16,13 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
+    env:
+      FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
     steps:
       - uses: actions/checkout@v4
       - name: Run FOSSA scan and upload build data
+        if: env.FOSSA_API_KEY != ''
         uses: fossa-contrib/fossa-action@v3
         with:
-          # FOSSA Push-Only API Token
-          fossa-api-key: 5ee8bf422db1471e0bcf2bcb289185de
+          fossa-api-key: ${{ env.FOSSA_API_KEY }}
           github-token: ${{ github.token }}
   scan-codeql:
     runs-on: ubuntu-latest
